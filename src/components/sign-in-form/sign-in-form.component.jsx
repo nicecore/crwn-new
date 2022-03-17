@@ -6,10 +6,11 @@ import {
 } from "../../utils/firebase/firebase.utils";
 
 import FormInput from "../form-input/form-input.component";
+import Button from "../button/button.component";
 
 import "./sign-in-form.styles.scss";
 
-import Button from "../button/button.component";
+
 
 const defaultFormFields = {
   email: "",
@@ -20,24 +21,25 @@ const SignInForm = () => {
   const [formFields, setFormFields] = useState(defaultFormFields);
   const { email, password } = formFields;
 
+  // Helper function to reset sign-in UI
   const resetFormFields = () => {
     setFormFields(defaultFormFields);
   };
 
+  // Trigger sign in with Google popup and, if applicable, create a new user Document from the auth object
   const signInWithGoogle = async () => {
-    const { user } = await signInWithGooglePopup();
-    await createUserDocumentFromAuth(user);
+    await signInWithGooglePopup();
   };
 
+  // Trigger sign in with email/password and set current user in app context
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     try {
-      const response = await signInAuthUserWithEmailAndPassword(
+      const { user } = await signInAuthUserWithEmailAndPassword(
         email,
         password
       );
-      console.log(response);
     } catch (error) {
       switch (error.code) {
         case "auth/wrong-password":
