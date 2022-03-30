@@ -12,7 +12,13 @@ const App = () => {
       <Route path="/" element={<Navigation />}>
         <Route index element={<Home />} />
         <Route path="auth" element={<Authentication />} />
-        <Route path="shop" element={<Shop />} />
+        {/* Asterisk in shop/* tells React that when it starts matching this path
+        there will be a subsequent URL parameter set after shop.
+        We don't care what it is, just match shop/anything.
+        As long as you match that, forward them and render this component.
+        Shop component will have its own routes inside.
+        */}
+        <Route path="shop/*" element={<Shop />} />
         <Route path="checkout" element={<Checkout />} />
 
       </Route>

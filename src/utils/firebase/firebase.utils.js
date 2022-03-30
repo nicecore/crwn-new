@@ -18,8 +18,15 @@ import {
   // Allows us to get and set docs' data (doc just allow us to get the docs themselves)
   getDoc,
   setDoc,
+  // Allows us to get a collection reference, like document reference (writing to a new collection)
+  collection,
+  writeBatch,
+  query,
+  getDocs
 } from "firebase/firestore";
 
+// Firebase configurations and initialize app
+// ------------------------------
 const firebaseConfig = {
   apiKey: "AIzaSyD8qaaBuXT4ftcm8uJxvY77HU--BNrXd8c",
   authDomain: "crwn-new-3b856.firebaseapp.com",
@@ -29,10 +36,15 @@ const firebaseConfig = {
   appId: "1:884354652569:web:d5bf8b93c82109743bdb08",
   measurementId: "G-ET9GM9RE94",
 };
-
 const firebaseApp = initializeApp(firebaseConfig);
+ 
+
+
+
 
 // Google Auth Provider setup
+// ------------------------------
+
 // Instantiate new Google Auth Provider class
 const googleProvider = new GoogleAuthProvider();
 // Set custom parameters on the Google Auth Provider, always prompt user to select an account
@@ -51,6 +63,48 @@ export const signInWithGoogleRedirect = () =>
 
 // Instantiation of our database, allows us to interact with it
 export const db = getFirestore();
+
+
+
+// Adding and getting products from database
+
+export const addCollectionAndDocuments = async (collectionKey, objectsToAdd, field) => {
+  const collectionRef = collection(db, collectionKey);
+
+  const batch = writeBatch(db);
+
+  objectsToAdd.forEach((object) => {
+    const docRef = doc(collectionRef, object.title.toLowerCase());
+    batch.set(docRef, object);
+  });
+
+  await batch.commit();
+  console.log('done')
+
+}
+
+
+export const getCategoriesAndDocuments = async () => {
+  const collectionRef = collection(db, 'categories');
+  const q = query(collectionRef);
+  const querySnapshot = await getDocs(q);
+  const categoryMap = querySnapshot.docs.reduce((acc, docSnapshot) => {
+    const { title, items } = docSnapshot.data();
+    acc[title.toLowerCase()] = items;
+    return acc;
+  }, {});
+
+  return categoryMap;
+}
+
+
+
+/* 
+Method allowing us to upload the product categories from SHOP_DATA
+into the respective firestore collections.
+*/
+
+
 
 // Store authed user in database as a user document
 // It takes the auth object we get back from firebase auth as an argument
@@ -74,8 +128,6 @@ export const createUserDocumentFromAuth = async (
 
   // Now we use getDoc to actually see if there is data at that location.
   const userSnapshot = await getDoc(userDocRef);
-  console.log(userSnapshot);
-  console.log(userSnapshot.exists());
 
   if (!userSnapshot.exists()) {
     // Get properties we want from auth object and new Date to create new user document in firestore
